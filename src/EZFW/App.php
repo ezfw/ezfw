@@ -45,11 +45,11 @@ class App
         return $this;
     }
 
-    public function use($plugin)
+    public function use($plugin, ?array $config = null)
     {
         if (is_string($plugin) && class_exists($plugin)) {
             $pluginInstance = new $plugin();
-            $pluginInstance->boot($this);
+            $pluginInstance->boot($this, $config ?? []);
         }
         return $this;
     }

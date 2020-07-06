@@ -14,6 +14,19 @@ it('should allow plugin to be registered', function () {
     $mock = Mockery::mock('overload:' . Plugin::class);
     $mock->shouldReceive('boot')
         ->once()
-        ->with($this->app);
+        ->with($this->app, []);
+
     $this->app->use(get_class($mock));
+});
+
+it('should allow plugin to be registered with config', function () {
+    $config = ['setting' => 'value'];
+
+    /** @var Mock $mock */
+    $mock = Mockery::mock('overload:' . Plugin::class);
+    $mock->shouldReceive('boot')
+        ->once()
+        ->with($this->app, $config);
+
+    $this->app->use(get_class($mock), $config);
 });

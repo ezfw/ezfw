@@ -6,5 +6,5 @@ use EZFW\App;
 
 abstract class Plugin
 {
-    abstract public function boot(App $app);
+    abstract public function boot(App $app, array $config);
 }
