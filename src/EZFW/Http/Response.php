@@ -38,6 +38,13 @@ class Response
         return $this;
     }
 
+    public function internalServerError(string $body)
+    {
+        $this->response_code = 500;
+        $this->body = $body;
+        return $this;
+    }
+
     public function addHeader(string $key, string $value)
     {
         $this->headers[$key] = $value;

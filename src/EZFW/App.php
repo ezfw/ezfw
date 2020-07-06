@@ -77,4 +77,10 @@ class App
         $this->kernel->router->add(Router::METHOD_DELETE, $route, $routeHandler);
         return $this;
     }
+
+    public function errorHandler(string $errorHandlerClass)
+    {
+        $this->kernel->errorHandlerClass = $errorHandlerClass;
+        return $this;
+    }
 }

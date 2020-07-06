@@ -2,12 +2,17 @@
 
 namespace EZFW\Http;
 
+use Exception;
+
 class Kernel
 {
     public Response $response;
     public Router $router;
     public array $beforeMiddleware = [];
     public array $afterMiddleware = [];
+
+    public ErrorHandler $errorHandler;
+    public string $errorHandlerClass = ErrorHandler::class;
 
     public function __construct()
     {
@@ -22,19 +27,23 @@ class Kernel
 
     public function handle(Request $request)
     {
-        $this->callMiddleware($this->beforeMiddleware, $request);
+        try {
+            $this->callMiddleware($this->beforeMiddleware, $request);
 
-        $routeHandler = $this->router->resolve($request);
+            $routeHandler = $this->router->resolve($request);
 
-        if (!isset($routeHandler)) {
-            $this->response->notFound('not found');
-        } else {
-            $this->response = $this->callRouteHandler($routeHandler, $request);
+            if (!isset($routeHandler)) {
+                $this->response->notFound('not found');
+            } else {
+                $this->response = $this->callRouteHandler($routeHandler, $request);
+            }
+
+            $this->callMiddleware($this->afterMiddleware, $request);
+
+            return $this->response;
+        } catch (Exception $e) {
+            return $this->getErrorHandler()->handle($e);
         }
-
-        $this->callMiddleware($this->afterMiddleware, $request);
-
-        return $this->response;
     }
 
     public function addBeforeMiddleware($middleware)
@@ -83,4 +92,14 @@ class Kernel
         }
         // TODO: throw exception if couldn't run
     }
+
+    protected function getErrorHandler() : ErrorHandler
+    {
+        if (!isset($this->errorHandler)) {
+            $this->errorHandler = new $this->errorHandlerClass();
+        }
+
+        return $this->errorHandler;
+    }
+
 }
