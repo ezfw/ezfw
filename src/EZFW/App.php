@@ -72,9 +72,21 @@ class App
         return $this;
     }
 
+    public function patch(string $route, $routeHandler)
+    {
+        $this->kernel->router->add(Router::METHOD_PATCH, $route, $routeHandler);
+        return $this;
+    }
+
     public function delete(string $route, $routeHandler)
     {
         $this->kernel->router->add(Router::METHOD_DELETE, $route, $routeHandler);
+        return $this;
+    }
+
+    public function options(string $route, $routeHandler)
+    {
+        $this->kernel->router->add(Router::METHOD_OPTIONS, $route, $routeHandler);
         return $this;
     }
 
