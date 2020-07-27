@@ -42,7 +42,7 @@ class Router
             }
 
             if ($currentRouteMap->matches($current) && $i == count($routeParts) - 1) {
-                $currentRouteMap->methods[$method] = $routeHandler;
+                $currentRouteMap->methods[strtoupper($method)] = $routeHandler;
                 break;
             }
         }

@@ -54,6 +54,14 @@ class App
         return $this;
     }
 
+    public function route(array $methods, string $route, $routeHandler)
+    {
+        foreach ($methods as $method) {
+            $this->kernel->router->add($method, $route, $routeHandler);
+        }
+        return $this;
+    }
+
     public function get(string $route, $routeHandler)
     {
         $this->kernel->router->add(Router::METHOD_GET, $route, $routeHandler);
