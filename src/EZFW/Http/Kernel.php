@@ -11,6 +11,9 @@ class Kernel
     public array $beforeMiddleware = [];
     public array $afterMiddleware = [];
 
+    public array $beforeGroupMiddleware = [];
+    public array $afterGroupMiddleware = [];
+
     public ErrorHandler $errorHandler;
     public string $errorHandlerClass = ErrorHandler::class;
 
@@ -28,17 +31,16 @@ class Kernel
     public function handle(Request $request)
     {
         try {
-            $this->callMiddleware($this->beforeMiddleware, $request);
+            $route = $this->router->resolve($request);
+            $this->callMiddleware($this->getBeforeMiddleware($route), $request);
 
-            $routeHandler = $this->router->resolve($request);
-
-            if (!isset($routeHandler)) {
+            if (!isset($route)) {
                 $this->response->notFound('not found');
             } else {
-                $this->response = $this->callRouteHandler($routeHandler, $request);
+                $this->response = $this->callRouteHandler($route['handler'], $request);
             }
 
-            $this->callMiddleware($this->afterMiddleware, $request);
+            $this->callMiddleware($this->getAfterMiddleware($route), $request);
 
             return $this->response;
         } catch (Exception $e) {
@@ -54,6 +56,16 @@ class Kernel
     public function addAfterMiddleware($middleware)
     {
         $this->afterMiddleware[] = $middleware;
+    }
+
+    public function addBeforeGroupMiddleware(string $group, $middleware)
+    {
+        $this->beforeGroupMiddleware[$group] = $middleware;
+    }
+
+    public function addAfterGroupMiddleware(string $group, $middleware)
+    {
+        $this->afterGroupMiddleware[$group] = $middleware;
     }
 
     protected function callMiddleware(array $middlewares, Request $request)
@@ -102,4 +114,25 @@ class Kernel
         return $this->errorHandler;
     }
 
+    protected function getBeforeMiddleware($route)
+    {
+        $middleware = $this->beforeMiddleware;
+
+        if (!empty($route['group']) && !empty($this->beforeGroupMiddleware[$route['group']])) {
+            $middleware = array_merge($middleware, $this->beforeGroupMiddleware[$route['group']]);
+        }
+
+        return $middleware;
+    }
+
+    protected function getAfterMiddleware($route)
+    {
+        $middleware = $this->afterMiddleware;
+
+        if (!empty($route['group']) && !empty($this->afterGroupMiddleware[$route['group']])) {
+            $middleware = array_merge($middleware, $this->afterGroupMiddleware[$route['group']]);
+        }
+
+        return $middleware;
+    }
 }

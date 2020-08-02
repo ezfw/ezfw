@@ -17,7 +17,7 @@ class Router
         $this->routeMap = new RouteMap('/');
     }
 
-    public function add(string $method, string $route, $routeHandler) : void
+    public function add(string $method, string $route, $routeHandler, string $group = null) : void
     {
         $routeParts = $this->getRouteParts($route);
         $currentRouteMap = $this->routeMap;
@@ -42,7 +42,7 @@ class Router
             }
 
             if ($currentRouteMap->matches($current) && $i == count($routeParts) - 1) {
-                $currentRouteMap->methods[strtoupper($method)] = $routeHandler;
+                $currentRouteMap->methods[strtoupper($method)] = ['handler' => $routeHandler, 'group' => $group];
                 break;
             }
         }

@@ -4,6 +4,7 @@ namespace EZFW;
 
 use EZFW\Http\Kernel;
 use EZFW\Http\Request;
+use EZFW\Http\RouteGroup;
 use EZFW\Http\Router;
 
 class App
@@ -95,6 +96,31 @@ class App
     public function options(string $route, $routeHandler)
     {
         $this->kernel->router->add(Router::METHOD_OPTIONS, $route, $routeHandler);
+        return $this;
+    }
+
+    public function group(string $route, $routeGroupHandler, RouteGroup $parentGroup = null)
+    {
+        if (isset($parentGroup)) {
+            $routeGroup = (clone $parentGroup)
+                ->setBaseRoute($route)
+                ->clearRoutes()
+                ->generateId();
+        } else {
+            $routeGroup = new RouteGroup($this, $route);
+        }
+
+        $routeGroupHandler($routeGroup);
+
+        foreach ($routeGroup->routes as $method => $routes) {
+            foreach ($routes as $route => $handler) {
+                $this->kernel->router->add($method, $routeGroup->getFullRoute($route), $handler, $routeGroup->id);
+            }
+        }
+
+        $this->kernel->addBeforeGroupMiddleware($routeGroup->id, $routeGroup->beforeMiddleware);
+        $this->kernel->addAfterGroupMiddleware($routeGroup->id, $routeGroup->afterMiddleware);
+
         return $this;
     }
 
